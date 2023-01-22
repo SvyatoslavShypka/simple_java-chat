@@ -45,8 +45,12 @@ public class Client {
     System.out.println("Messages: \n");
 
     // while new messages
+    String str;
     while (sc.hasNextLine()) {
-      output.println(sc.nextLine());
+      str = sc.nextLine();
+      if (!str.equals("")) {
+        output.println(str);
+      }
     }
 
     // end ctrl D
