@@ -5,6 +5,7 @@ import java.io.InputStream;
 import java.io.PrintStream;
 import java.net.Socket;
 import java.net.UnknownHostException;
+import java.util.List;
 import java.util.Scanner;
 import java.io.StringReader;
 
@@ -27,7 +28,7 @@ public class Client {
     Socket client = new Socket(host, port);
     System.out.println("Client successfully connected to server!");
 
-    // Get Socket output stream (where the client send her mesg)
+    // Get Socket output stream (where the client sends its messages)
     PrintStream output = new PrintStream(client.getOutputStream());
 
     // ask for a nickname
@@ -63,6 +64,7 @@ public class Client {
 class ReceivedMessagesHandler implements Runnable {
 
   private InputStream server;
+  private static ArrayList<String> userTags;
 
   public ReceivedMessagesHandler(InputStream server) {
     this.server = server;
@@ -76,23 +78,45 @@ class ReceivedMessagesHandler implements Runnable {
       tmp = s.nextLine();
       if (tmp.charAt(0) == '[') {
         tmp = tmp.substring(1, tmp.length()-1);
-        System.out.println(
-            "\nUSERS LIST: " +
-            new ArrayList<String>(Arrays.asList(tmp.split(","))) + "\n"
-            );
+        userTags = new ArrayList<>();
+        for (String x: tmp.split(",")
+             ) {
+        userTags.add(getTagUserValue(x));
+        }
+//        One USER or many USERS
+        int userQuantity = userTags.size();
+        System.out.println("USERS LIST: Total - " + userQuantity + (userQuantity > 1 ? " users" : " user"));
+        for (String x: userTags
+             ) {
+          System.out.println("\t\t\t" + x);
+        }
       }else{
         try {
-          System.out.println("\n" + getTagValue(tmp));
+          System.out.println(getTagWelcomeValue(tmp) + getTagUserValue(tmp) + "!");
           // System.out.println(tmp);
-        } catch(Exception ignore){}
+        } catch(Exception ignore){
+//          System.out.println("Exception");
+        }
       }
     }
     s.close();
   }
 
   // I could use a javax.xml.parsers but the goal of Client.java is to keep everything tight and simple
-  public static String getTagValue(String xml){
-    return  xml.split(">")[2].split("<")[0] + xml.split("<span>")[1].split("</span>")[0];
+  public static String getTagUserValue(String xml){
+    String tmp3 = xml.split("<span")[1];
+    String tmp4 = tmp3.split("</span>")[0];
+    String tmp5 = tmp4.split(">")[1];
+    String tmp2 = tmp5;
+
+    return  tmp2;
+  }
+
+  public static String getTagWelcomeValue(String xml){
+    String leftCutWelcome = xml.split(">")[2];
+    String rightCutWelcome = leftCutWelcome.split("<")[0];
+
+    return  rightCutWelcome  + "\t";
   }
 
 }

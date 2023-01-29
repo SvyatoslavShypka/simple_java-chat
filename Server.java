@@ -39,31 +39,38 @@ public class Server {
       Socket client = server.accept();
 
       // get nickname of newUser
-      String nickname = (new Scanner ( client.getInputStream() )).nextLine();
-      nickname = nickname.replace(",", ""); //  ',' use for serialisation
-      nickname = nickname.replace(" ", "_");
-      System.out.println("New Client: \"" + nickname + "\"\n\t     Host:" + client.getInetAddress().getHostAddress());
+      String nickname = null;
+      try {
+        nickname = new Scanner( client.getInputStream() ).nextLine();
+        nickname = nickname.replace(",", ""); //  ',' use for serialisation
+        nickname = nickname.replace(" ", "_");
+        System.out.println("New Client: \"" + nickname + "\"\n\t     Host:" + client.getInetAddress().getHostAddress());
 
-      // create new User
-      User newUser = new User(client, nickname);
+        // create new User
+        User newUser = new User(client, nickname);
 
-      // add newUser message to list
-      this.clients.add(newUser);
+        // add newUser message to list
+        this.clients.add(newUser);
 
-      // Welcome msg
-      newUser.getOutStream().println(
-          "<img src='https://www.kizoa.fr/img/e8nZC.gif' height='42' width='42'>"
-          + "<b>Welcome</b> " + newUser.toString() +
-          "<img src='https://www.kizoa.fr/img/e8nZC.gif' height='42' width='42'>"
-          );
+        // Welcome msg
+        newUser.getOutStream().println(
+            "<img src='https://www.kizoa.fr/img/e8nZC.gif' height='42' width='42'>"
+//            "<img src='https://drive.google.com/file/d/1nFBTwt3uLi4rpQq53yVG8ODzIrVSi2HT/view?usp=share_link' height='42' width='42'>"
+            + "<b>Welcome</b> " + newUser.toString() +
+            "<img src='https://www.kizoa.fr/img/e8nZC.gif' height='42' width='42'>"
+            );
 
-      // create a new thread for newUser incoming messages handling
-      new Thread(new UserHandler(this, newUser)).start();
+        // create a new thread for newUser incoming messages handling
+        new Thread(new UserHandler(this, newUser)).start();
+      } catch (IOException e) {
+//        e.printStackTrace();
+      }
     }
   }
 
   // delete a user from the list
   public void removeUser(User user){
+    broadcastMessages("<span style='background-color:#000000; color:#FFFFFF'>User [" + user.getNickname() + "] is leaving the chat </span>", user);
     this.clients.remove(user);
   }
 
@@ -90,7 +97,7 @@ public class Server {
         find = true;
         userSender.getOutStream().println(userSender.toString() + " -> " + client.toString() +": " + msg);
         client.getOutStream().println(
-            "(<b>Private</b>)" + userSender.toString() + "<span>: " + msg+"</span>");
+            "(<b>Private</b> from) " + userSender.toString() + "<span>: " + msg+"</span>");
       }
     }
     if (!find) {
@@ -130,12 +137,12 @@ class UserHandler implements Runnable {
       message = message.replace(":o", "<img src='http://1.bp.blogspot.com/-MB8OSM9zcmM/TvitChHcRRI/AAAAAAAAAiE/kdA6RbnbzFU/s400/surprised%2Bemoticon.png'>");
       message = message.replace(":O", "<img src='http://1.bp.blogspot.com/-MB8OSM9zcmM/TvitChHcRRI/AAAAAAAAAiE/kdA6RbnbzFU/s400/surprised%2Bemoticon.png'>");
 
-      // Gestion des messages private
+      // If there is private message
       if (message.charAt(0) == '@'){
         if(message.contains(" ")){
           System.out.println("private msg : " + message);
           int firstSpace = message.indexOf(" ");
-          String userPrivate= message.substring(1, firstSpace);
+          String userPrivate = message.substring(1, firstSpace);
           server.sendMessageToUser(
               message.substring(
                 firstSpace+1, message.length()
@@ -143,10 +150,10 @@ class UserHandler implements Runnable {
               );
         }
 
-      // Gestion du changement
+      // Change color
       }else if (message.charAt(0) == '#'){
         user.changeColor(message);
-        // update color for all other users
+        // update color for all other users /refresh client's windows/
         this.server.broadcastAllUsers();
       }else{
         // update user list
@@ -200,7 +207,7 @@ class User {
     this.getOutStream().println("<b>Failed to change color</b>");
   }
 
-  // getteur
+  // getters
   public PrintStream getOutStream(){
     return this.streamOut;
   }
