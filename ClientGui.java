@@ -29,6 +29,13 @@ public class ClientGui extends Thread{
   PrintWriter output;
   Socket server;
 
+//  TODO Client Window - add nickname
+//  TODO Refresh All UI after emoji
+//  TODO Nicknames have to be unique
+//  TODO show total quantity of connected users
+//  TODO Add docker file
+//  TODO add new animated GIF's'
+
   public ClientGui() {
     this.serverName = "localhost";
     this.PORT = 12345;
@@ -90,7 +97,7 @@ public class ClientGui extends Thread{
           sendMessage();
         }
 
-        // Get last message typed
+        // Get last message typed (arrow UP)
         if (e.getKeyCode() == KeyEvent.VK_UP) {
           String currentMessage = jtextInputChat.getText().trim();
           jtextInputChat.setText(oldMsg);
@@ -145,12 +152,12 @@ public class ClientGui extends Thread{
 
 
     // info sur le Chat
-    appendToPane(jtextFilDiscu, "<h4>Les commandes possibles dans le chat sont:</h4>"
+    appendToPane(jtextFilDiscu, "<h4>Use commands to chat:</h4>"
         +"<ul>"
-        +"<li><b>@nickname</b> pour envoyer un Message privé à l'utilisateur 'nickname'</li>"
-        +"<li><b>#d3961b</b> pour changer la couleur de son pseudo au code hexadécimal indiquer</li>"
-        +"<li><b>;)</b> quelques smileys sont implémentés</li>"
-        +"<li><b>flèche du haut</b> pour reprendre le dernier message tapé</li>"
+        +"<li><b>@nickname</b> Send private message to user 'nickname'</li>"
+        +"<li><b>#d3961b</b> Change color of your 'nickname' label</li>"
+        +"<li><b>;)</b> Use emoji - they will be automatically switched on smiles </li>"
+        +"<li><b>Arrow UP</b> Quick call to the last message</li>"
         +"</ul><br/>");
 
     // On connect
